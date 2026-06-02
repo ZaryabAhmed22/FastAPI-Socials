@@ -1,7 +1,22 @@
 from fastapi import FastAPI, HTTPException
 from app.schemas import PostCreate, PostResponse
 
-app = FastAPI()
+# Database imports
+from app.db import Post, create_db_and_tables, get_async_session
+from sqlalchemy.ext.asyncio import AsyncSession
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    await create_db_and_tables()
+    yield
+    # Shutdown
+
+
+# lifespan >> What it does is that it creates a session for each request and closes it after the request is completed
+# This is a good practice because it ensures that the session is always closed and we don't have any memory leaks
+app = FastAPI(lifespan=lifespan)
 
 text_posts = {
    1: {
